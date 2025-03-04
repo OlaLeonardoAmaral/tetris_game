@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tetris</title>
+  <!-- Link para o arquivo de estilos -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Tetris</h1>
+    <p>
+      Pontuação: <span id="score">0</span> | 
+      Nível: <span id="level">1</span> | 
+      Linhas: <span id="lines">0</span>
+    </p>
+  </header>
+  <main>
+    <!-- Canvas onde o jogo será desenhado: 10x20 células (300x600 pixels considerando cada célula com 30px) -->
+    <canvas id="tetris" width="300" height="600"></canvas>
+    <div id="high-scores">
+        <h2>Top 5 Pontuações</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Posição</th>
+                    <th>Pontuação</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody id="high-scores-body">
+            </tbody>
+        </table>
+    </div>
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+          <h2>Game Over!</h2>
+          <p>Sua pontuação: <span id="finalScore"></span></p>
+          <button id="restartButton">Jogar Novamente</button>
+        </div>
+      </div>
+      
+    
+  </main>
+  <footer>
+    <!-- Botão para iniciar/reiniciar o jogo -->
+    <button id="startButton">Iniciar Jogo</button>
+  </footer>
+  <!-- Inclusão do arquivo JavaScript com a lógica do jogo -->
+  <script src="script.js"></script>
+</body>
+</html>
