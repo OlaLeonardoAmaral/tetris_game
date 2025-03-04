@@ -1,22 +1,22 @@
-/*
-Tetris Clássico
-Desenvolvido com HTML, CSS e JavaScript
-Este arquivo contém toda a lógica do jogo: criação do grid, definição dos tetrominós, detecção de colisões,
-remoção de linhas completas, atualização da pontuação e controle dos níveis.
-*/
-
-// Obtém o elemento canvas e seu contexto 2D
 const canvas = document.getElementById('tetris');
 const context = canvas.getContext('2d');
 
-// Define o tamanho de cada célula (tamanho do bloco)
-const gridCell = 30;
+// Ajusta o tamanho do canvas para se adequar à tela do dispositivo
+function resizeCanvas() {
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const size = Math.min(screenWidth, screenHeight) * 0.9;
+    canvas.width = size;
+    canvas.height = size * 2;
+    gridCell = size / 10;
+}
 
-// Define o tamanho do grid: 10 colunas x 20 linhas
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
 const gridWidth = 10;
 const gridHeight = 20;
 
-// Função para criar uma matriz (tabuleiro) preenchida com zeros
 function createMatrix(w, h) {
     const matrix = [];
     for (let i = 0; i < h; i++) {
@@ -27,7 +27,6 @@ function createMatrix(w, h) {
 
 let board = createMatrix(gridWidth, gridHeight);
 
-// Definição dos tetrominós clássicos com suas formas e cores
 const tetrominoes = {
     'I': {
         shape: [
@@ -87,7 +86,6 @@ const tetrominoes = {
     }
 };
 
-// Função para selecionar aleatoriamente um tetrominó e inicializá-lo
 function createPiece() {
     const tetrominoKeys = Object.keys(tetrominoes);
     const randKey = tetrominoKeys[Math.floor(Math.random() * tetrominoKeys.length)];
@@ -100,15 +98,11 @@ function createPiece() {
     return piece;
 }
 
-// Define a peça atual
 let currentPiece = createPiece();
-
-// Variáveis de controle: pontuação, nível e linhas completadas
 let score = 0;
 let level = 1;
 let linesCleared = 0;
 
-// Função para desenhar tanto o tabuleiro quanto a peça atual
 function draw() {
     context.fillStyle = '#000';
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -212,7 +206,6 @@ function sweep() {
         y++;
         rowCount++;
     }
-
     if (rowCount > 0) {
         score += rowCount * 10;
         linesCleared += rowCount;
@@ -247,11 +240,46 @@ function update(time = 0) {
         }
         dropCounter = 0;
     }
-
     draw();
     requestAnimationFrame(update);
 }
 
+// Controles de toque
+let touchStartX, touchStartY;
+
+canvas.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+});
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+});
+
+canvas.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const dx = touchEndX - touchStartX;
+    const dy = touchEndY - touchStartY;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        // Movimento horizontal
+        if (dx > 0) {
+            movePiece(1, 0);
+        } else {
+            movePiece(-1, 0);
+        }
+    } else {
+        // Movimento vertical
+        if (dy > 0) {
+            while (movePiece(0, 1)) {}
+        } else {
+            rotatePiece();
+        }
+    }
+});
+
+// Controles de teclado
 document.addEventListener('keydown', event => {
     if (event.key === 'ArrowLeft') {
         movePiece(-1, 0);
@@ -267,7 +295,6 @@ document.addEventListener('keydown', event => {
     }
 });
 
-// Função para salvar a pontuação no localStorage
 function saveScore() {
     let highScores = JSON.parse(localStorage.getItem('tetrisHighScores')) || [];
     highScores.push({score: score, date: new Date().toLocaleString()});
@@ -277,7 +304,6 @@ function saveScore() {
     updateHighScoresTable();
 }
 
-// Função para atualizar a tabela de pontuações altas
 function updateHighScoresTable() {
     const highScores = JSON.parse(localStorage.getItem('tetrisHighScores')) || [];
     const tableBody = document.getElementById('high-scores-body');
@@ -295,10 +321,8 @@ function gameOver() {
     const modal = document.getElementById('gameOverModal');
     const finalScoreSpan = document.getElementById('finalScore');
     const restartButton = document.getElementById('restartButton');
-
     finalScoreSpan.textContent = score;
     modal.style.display = 'block';
-
     restartButton.onclick = function() {
         modal.style.display = 'none';
         board = createMatrix(gridWidth, gridHeight);
@@ -315,8 +339,6 @@ function gameOver() {
     };
 }
 
-
-// Evento para iniciar o jogo ao clicar no botão
 document.getElementById('startButton').addEventListener('click', () => {
     board = createMatrix(gridWidth, gridHeight);
     score = 0;
@@ -332,7 +354,4 @@ document.getElementById('startButton').addEventListener('click', () => {
     update();
 });
 
-
-
-// Inicializa a tabela de pontuações altas ao carregar a página
 updateHighScoresTable();
