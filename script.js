@@ -98,22 +98,38 @@ function draw() {
     context.fillStyle = '#000';
     context.fillRect(0, 0, canvas.width, canvas.height);
     drawMatrix(board, { x: 0, y: 0 }, context);
+    
+    // Desenhar a sombra (ghost piece)
+    const ghostPiece = getGhostPiece(currentPiece);
+    drawMatrix(ghostPiece.matrix, { x: ghostPiece.x, y: ghostPiece.y }, context, true);
+    
+    // Desenhar a peça atual por cima da sombra
     drawMatrix(currentPiece.matrix, { x: currentPiece.x, y: currentPiece.y }, context);
     drawNextPiece();
-}
+  }
+  
 
-function drawMatrix(matrix, offset, ctx) {
+  function drawMatrix(matrix, offset, ctx, isGhost = false) {
     matrix.forEach((row, y) => {
-        row.forEach((value, x) => {
-            if (value !== 0) {
-                ctx.fillStyle = getColor(value, matrix);
-                ctx.fillRect((x + offset.x) * gridCell, (y + offset.y) * gridCell, gridCell, gridCell);
-                ctx.strokeStyle = '#000';
-                ctx.strokeRect((x + offset.x) * gridCell, (y + offset.y) * gridCell, gridCell, gridCell);
-            }
-        });
+      row.forEach((value, x) => {
+        if (value !== 0) {
+          if (isGhost) {
+            ctx.globalAlpha = 0.3;  // Define opacidade reduzida para o ghost piece
+          } else {
+            ctx.globalAlpha = 1;
+          }
+          ctx.fillStyle = getColor(value, matrix);
+          ctx.fillRect((x + offset.x) * gridCell, (y + offset.y) * gridCell, gridCell, gridCell);
+          
+          // Resetar opacidade para o contorno
+          ctx.globalAlpha = 1;
+          ctx.strokeStyle = '#000';
+          ctx.strokeRect((x + offset.x) * gridCell, (y + offset.y) * gridCell, gridCell, gridCell);
+        }
+      });
     });
-}
+  }
+  
 
 function drawNextPiece() {
     nextPieceContext.fillStyle = '#000';
@@ -135,6 +151,23 @@ function getColor(value, matrix) {
     const colors = [null, '#00f0f0', '#0000f0', '#f0a000', '#f0f000', '#00f000', '#a000f0', '#f00000'];
     return colors[value];
 }
+
+function getGhostPiece(piece) {
+    // Clona a peça atual para calcular a posição final sem afetar o estado original
+    let ghost = {
+      matrix: piece.matrix.map(row => row.slice()),
+      color: piece.color,
+      x: piece.x,
+      y: piece.y
+    };
+    // Move a peça para baixo até que colida com o tabuleiro
+    while (!collide(board, ghost)) {
+      ghost.y++;
+    }
+    ghost.y--; // Retrocede uma linha após a colisão
+    return ghost;
+  }
+  
 
 function movePiece(offsetX, offsetY) {
     currentPiece.x += offsetX;
